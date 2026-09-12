@@ -1,0 +1,105 @@
+;;; ride-apl-transport-test.el --- Frame codec tests -*- lexical-binding: t; -*-
+
+(require 'ert)
+(require 'ride-apl-transport)
+
+(defun ride-apl-test--frame (payload)
+  (let* ((bytes (encode-coding-string payload 'utf-8))
+         (total (+ 8 (length bytes))))
+    (concat (unibyte-string (ash total -24)
+                            (logand (ash total -16) #xff)
+                            (logand (ash total -8) #xff)
+                            (logand total #xff))
+            "RIDE" bytes)))
+
+(defun ride-apl-test--bytes (&rest chunks)
+  (apply #'concat (mapcar (lambda (c) (string-to-unibyte c)) chunks)))
+
+(ert-deftest ride-apl-transport-encode-frames-payload ()
+  (pcase-dolist (`(,desc ,payload ,expected-total)
+                 '(("ascii handshake string" "UsingProtocol=2" 23)
+                   ("empty payload" "" 8)
+                   ("json message" "[\"Identify\",{\"apiVersion\":1}]" 37)))
+    (ert-info ((format "encode should produce %d total bytes for %s"
+                       expected-total desc))
+      (let ((frame (ride-apl-transport-encode payload)))
+        (should (equal (length frame) expected-total))
+        (should (equal (substring frame 4 8) "RIDE"))
+        (should (equal (aref frame 3) (logand expected-total #xff)))))))
+
+(ert-deftest ride-apl-transport-encode-counts-bytes-not-chars ()
+  (ert-info ("encode should size the header by UTF-8 bytes, not characters")
+    (let ((frame (ride-apl-transport-encode "⍳")))
+      (should (equal (length frame) 11))
+      (should (equal (aref frame 3) 11)))))
+
+(ert-deftest ride-apl-transport-encode-returns-unibyte ()
+  (ert-info ("encode should return a unibyte string even for APL glyphs")
+    (should (not (multibyte-string-p (ride-apl-transport-encode "⍳⍴⌊"))))))
+
+(ert-deftest ride-apl-transport-decode-completes-frames ()
+  (pcase-dolist (`(,desc ,payloads)
+                 '(("a single ascii frame" ("SupportedProtocols=2"))
+                   ("a single glyph frame" ("2+2 ⋄ ⍳9"))
+                   ("two frames in one chunk" ("first" "second"))
+                   ("three frames in one chunk" ("a" "⍳" "c"))))
+    (ert-info ((format "decode should return all payloads and empty remainder for %s" desc))
+      (let ((result (ride-apl-transport-decode
+                     (apply #'concat (mapcar #'ride-apl-test--frame payloads)))))
+        (should (equal (car result) payloads))
+        (should (equal (cdr result) ""))))))
+
+(ert-deftest ride-apl-transport-decode-keeps-partial-frames ()
+  (let* ((frame (ride-apl-test--frame "⍳9"))
+         (splits (number-sequence 0 (1- (length frame)))))
+    (dolist (i splits)
+      (ert-info ((format "decode should hold back an incomplete frame split at byte %d" i))
+        (let ((result (ride-apl-transport-decode (substring frame 0 i))))
+          (should (equal (car result) nil))
+          (should (equal (cdr result) (substring frame 0 i))))))))
+
+(ert-deftest ride-apl-transport-decode-resumes-across-chunks ()
+  (let* ((frame (ride-apl-test--frame "⍳9"))
+         (splits (number-sequence 1 (1- (length frame)))))
+    (dolist (i splits)
+      (ert-info ((format "decode should reassemble a frame split at byte %d, including mid-glyph" i))
+        (let* ((first (ride-apl-transport-decode (substring frame 0 i)))
+               (second (ride-apl-transport-decode
+                        (concat (cdr first) (substring frame i)))))
+          (should (equal (car second) '("⍳9")))
+          (should (equal (cdr second) "")))))))
+
+(ert-deftest ride-apl-transport-decode-returns-trailing-partial ()
+  (ert-info ("decode should emit complete frames and keep the trailing partial as remainder")
+    (let* ((whole (ride-apl-test--frame "done"))
+           (partial (substring (ride-apl-test--frame "pending") 0 5))
+           (result (ride-apl-transport-decode (concat whole partial))))
+      (should (equal (car result) '("done")))
+      (should (equal (cdr result) partial)))))
+
+(ert-deftest ride-apl-transport-decode-rejects-bad-magic ()
+  (ert-info ("decode should signal ride-apl-transport-bad-frame when the magic is not RIDE")
+    (let ((frame (ride-apl-test--frame "x")))
+      (aset frame 4 ?X)
+      (should-error (ride-apl-transport-decode frame)
+                    :type 'ride-apl-transport-bad-frame))))
+
+(ert-deftest ride-apl-transport-decode-rejects-impossible-length ()
+  (ert-info ("decode should signal ride-apl-transport-bad-frame on a declared length below 8")
+    (should-error (ride-apl-transport-decode
+                   (concat (unibyte-string 0 0 0 3) "RIDEx"))
+                  :type 'ride-apl-transport-bad-frame)))
+
+(ert-deftest ride-apl-transport-roundtrip ()
+  (pcase-dolist (`(,desc ,payload)
+                 `(("handshake string" "UsingProtocol=2")
+                   ("json with glyphs" "[\"Execute\",{\"text\":\"      ⍳9\\n\",\"trace\":0}]")
+                   ("empty payload" "")
+                   ("payload past one header byte" ,(make-string 1000 ?⍟))))
+    (ert-info ((format "decode of encode should return the original payload for %s" desc))
+      (let ((result (ride-apl-transport-decode (ride-apl-transport-encode payload))))
+        (should (equal (car result) (list payload)))
+        (should (equal (cdr result) ""))))))
+
+(provide 'ride-apl-transport-test)
+;;; ride-apl-transport-test.el ends here

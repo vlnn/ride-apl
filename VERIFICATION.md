@@ -19,7 +19,7 @@ Ground rules:
 
 Start the interpreter:
 
-    Dyalog_LineEditor_Mode=1 RIDE_INIT=SERVE:127.0.0.1:4502 dyalog
+ `DYALOG_LINEEDITOR_MODE=1 RIDE_INIT=SERVE:127.0.0.1:4502 dyalog`
 
 and note the exact Dyalog and Link versions (`]VERSION` once
 connected) at the top of your notes.

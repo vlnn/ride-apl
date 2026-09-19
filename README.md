@@ -27,7 +27,7 @@ or with use-package (Emacs 29+):
 
 Start an interpreter that serves RIDE:
 
-    Dyalog_LineEditor_Mode=1 RIDE_INIT=SERVE:127.0.0.1:4502 dyalog -tty
+    DYALOG_LINEEDITOR_MODE=1 RIDE_INIT=SERVE:127.0.0.1:4502 dyalog -tty
 
 (`Dyalog_LineEditor_Mode=1` enables multi-line session input — without
 it a dfn evaluated line by line dies with `SYNTAX ERROR: Unpaired

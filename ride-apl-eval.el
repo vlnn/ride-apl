@@ -83,7 +83,7 @@ default."
                                   (ignore-errors (ride-apl-trace--expression)))))
   (when (string-blank-p expression)
     (user-error "ride-apl: nothing to trace"))
-  (ride-apl--dispatch-trace expression))
+  (ride-apl-trace--dispatch expression))
 
 (defun ride-apl-trace-line ()
   "Run the current line, or the active single-line region, under the tracer.
@@ -93,7 +93,7 @@ scratch buffer is traced without setting a breakpoint in it.  The
 expression's definitions must already be in the workspace (evaluate or
 load the buffer first)."
   (interactive)
-  (ride-apl--dispatch-trace (ride-apl-trace--expression)))
+  (ride-apl-trace--dispatch (ride-apl-trace--expression)))
 
 (defun ride-apl-trace--expression ()
   (let ((text (string-trim (if (use-region-p)
@@ -107,7 +107,7 @@ load the buffer first)."
       (user-error "ride-apl: trace takes a single expression"))
     text))
 
-(defun ride-apl--dispatch-trace (text)
+(defun ride-apl-trace--dispatch (text)
   (let ((conn (ride-apl-current-conn)))
     (unless conn (user-error "ride-apl: no session"))
     (ride-apl-session--dispatch conn (list :trace-line text))))

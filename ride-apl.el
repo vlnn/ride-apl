@@ -35,6 +35,88 @@
 RIDE is unauthenticated plaintext TCP; prefer an SSH tunnel."
   :type 'boolean :group 'ride-apl)
 
+(defcustom ride-apl-program "dyalog"
+  "Interpreter executable run by `ride-apl-start'."
+  :type 'string :group 'ride-apl)
+
+(defcustom ride-apl-program-args nil
+  "Extra arguments `ride-apl-start' passes to `ride-apl-program'."
+  :type '(repeat string) :group 'ride-apl)
+
+(defcustom ride-apl-spawn-timeout 10
+  "Seconds `ride-apl-start' waits for the interpreter to serve RIDE."
+  :type 'number :group 'ride-apl)
+
+(defcustom ride-apl-spawn-retry-interval 0.15
+  "Seconds between connection attempts to a spawned interpreter."
+  :type 'number :group 'ride-apl)
+
+;;;###autoload
+(defun ride-apl-start (&optional command)
+  "Spawn a Dyalog interpreter and connect to it.
+Run `ride-apl-program' with `ride-apl-program-args', told via
+RIDE_INIT to serve RIDE on a free loopback port, and connect as soon
+as it accepts.  With a prefix argument, prompt for the exact COMMAND
+line instead.  Return the interpreter process."
+  (interactive
+   (list (when current-prefix-arg
+           (read-shell-command "Interpreter command: "
+                               (combine-and-quote-strings
+                                (cons ride-apl-program ride-apl-program-args))))))
+  (let* ((port (ride-apl-spawn--free-port))
+         (process (ride-apl-spawn--launch (ride-apl-spawn--command command) port)))
+    (message "ride-apl: started %s; waiting for RIDE on port %s..."
+             (car (process-command process)) port)
+    (ride-apl-spawn--connect-when-ready process "127.0.0.1" port
+                                    (+ (float-time) ride-apl-spawn-timeout))
+    process))
+
+(defun ride-apl-spawn--command (command)
+  "Argv for the interpreter: COMMAND when given, else the customized one."
+  (if command
+      (split-string-shell-command command)
+    (cons ride-apl-program ride-apl-program-args)))
+
+(defun ride-apl-spawn--free-port ()
+  "A currently free loopback TCP port, courtesy of the kernel."
+  (let ((probe (make-network-process :name "ride-apl-port-probe" :server t
+                                     :host "127.0.0.1" :service t :noquery t)))
+    (unwind-protect (process-contact probe :service)
+      (delete-process probe))))
+
+(defun ride-apl-spawn--environment (port)
+  "`process-environment' telling the interpreter to serve RIDE on PORT."
+  (cons (format "RIDE_INIT=SERVE:127.0.0.1:%s" port) process-environment))
+
+(defun ride-apl-spawn--launch (argv port)
+  "Start ARGV with RIDE_INIT set to serve PORT; return the process."
+  (let ((process-environment (ride-apl-spawn--environment port)))
+    (make-process :name "ride-apl-interpreter"
+                  :buffer (generate-new-buffer "*ride-apl-interpreter*")
+                  :command argv
+                  :noquery t)))
+
+(defun ride-apl-spawn--connect-when-ready (process host port deadline)
+  "Connect to HOST:PORT once PROCESS serves it, retrying until DEADLINE."
+  (cond
+   ((not (process-live-p process))
+    (user-error "ride-apl: interpreter exited before serving RIDE (see %s)"
+                (buffer-name (process-buffer process))))
+   ((ride-apl-spawn--try-connect host port))
+   ((> (float-time) deadline)
+    (interrupt-process process)
+    (user-error "ride-apl: interpreter did not serve RIDE within %s s"
+                ride-apl-spawn-timeout))
+   (t (run-at-time ride-apl-spawn-retry-interval nil
+                   #'ride-apl-spawn--connect-when-ready
+                   process host port deadline))))
+
+(defun ride-apl-spawn--try-connect (host port)
+  "Attempt one connection to HOST:PORT; nil when nothing listens yet."
+  (condition-case nil
+      (ride-apl-connect host port)
+    (file-error nil)))
+
 ;;;###autoload
 (defun ride-apl-connect (host port)
   "Connect to a Dyalog interpreter listening at HOST:PORT."

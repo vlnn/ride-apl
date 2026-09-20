@@ -91,7 +91,9 @@ Tracks implementation against `ride-apl-el-architecture-2.md`. Legend:
 
 ## Architectural decisions
 
-- AD-1 connect-first: [x] (spawn deferred as planned)
+- AD-1 connect-first: [x]; `ride-apl-start` spawns `ride-apl-program`
+  with RIDE_INIT=SERVE on a free loopback port and connects when it
+  accepts (retry loop, dies cleanly when the process exits or times out)
 - AD-2 functional core / imperative shell: [x] `ride-apl-session-step` pure;
   effects executed by registry-based interpreter
 - AD-3 layered files: [x] as specified; REPL registers effect handlers

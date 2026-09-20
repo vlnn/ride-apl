@@ -39,7 +39,11 @@ In Emacs:
     (add-hook 'dyalog-mode-hook #'ride-apl-eval-minor-mode)
     (ride-apl-link-setup-file-modes)   ; .aplf/.aplo/.apln/... -> dyalog-mode
 
-then `M-x ride-apl-connect`.  You get a `*ride-apl:HOST:PORT*` session buffer:
+then `M-x ride-apl-start` to spawn an interpreter and connect in one
+step (`ride-apl-program`, default `dyalog`; `ride-apl-program-args` for
+flags such as `-tty`; prefix argument prompts for the exact command
+line) — or start one yourself as above and `M-x ride-apl-connect`.
+You get a `*ride-apl:HOST:PORT*` session buffer:
 log backfill, prompt gating, one Execute at a time (the queue clears
 on error), interrupts on `C-c C-c` / `C-c C-k`, history on `M-p` /
 `M-n`, `M-x ride-apl-set-width` for ⎕PW.  Raw protocol traffic stays
@@ -159,6 +163,9 @@ fallback when you disable the redirect (`ride-apl-edit-visit-files`).
 
 ## Knobs
 
+    ride-apl-program                  interpreter for ride-apl-start, default dyalog
+    ride-apl-program-args             extra args, default none
+    ride-apl-spawn-timeout            seconds to wait for RIDE, default 10
     ride-apl-eval-result-display      overlay (default) / echo / nil
     ride-apl-eval-result-max-length   inline truncation, default 120
     ride-apl-link-notify-on-save      t by default

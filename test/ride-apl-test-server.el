@@ -8,17 +8,18 @@
 (defvar ride-apl-testsrv-edit-filename ""
   "Filename echoed in OpenWindow replies to Edit; tests may set this.")
 
-(defun ride-apl-testsrv-start (behavior)
+(defun ride-apl-testsrv-start (behavior &optional port)
   "Start a fake interpreter with BEHAVIOR; return (SERVER . PORT).
 BEHAVIOR: `happy' handshakes and identifies, `silent' says nothing,
 `mismatch' offers an unsupported protocol, `repl' runs a canned REPL
-\(reactions in ride-apl-repl-e2e-test.el)."
+\(reactions in ride-apl-repl-e2e-test.el).  Listen on PORT when
+given, else on a kernel-assigned free port."
   (setq ride-apl-testsrv--received nil)
   (setq ride-apl-testsrv--clients nil)
   (setq ride-apl-testsrv-edit-filename "")
   (let ((server (make-network-process
                  :name "ride-apl-testsrv" :server t :host "127.0.0.1"
-                 :service t :coding '(binary . binary) :noquery t
+                 :service (or port t) :coding '(binary . binary) :noquery t
                  :plist (list 'ride-apl-behavior behavior)
                  :filter #'ride-apl-testsrv--filter
                  :sentinel #'ride-apl-testsrv--sentinel)))

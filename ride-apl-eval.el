@@ -39,6 +39,7 @@ evaluated line, an echo-area message, or nothing."
 (defvar ride-apl-eval-minor-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'ride-apl-eval-line-or-region)
+    (define-key map (kbd "C-c C-t") #'ride-apl-trace-line)
     (define-key map (kbd "C-c C-b") #'ride-apl-eval-buffer)
     (define-key map (kbd "C-c C-l") #'ride-apl-load-file)
     (define-key map (kbd "C-c C-z") #'ride-apl-pop-to-repl)
@@ -73,6 +74,43 @@ Enable it in `dyalog-mode' buffers, e.g.:
     (ride-apl--dispatch-input lines)
     (message "ride-apl: %d line%s queued" (length lines)
              (if (= 1 (length lines)) "" "s"))))
+
+(defun ride-apl-trace (expression)
+  "Run EXPRESSION under the tracer in the connected session.
+Interactively, prompt for it with the expression at point as the
+default."
+  (interactive (list (read-string "Trace: "
+                                  (ignore-errors (ride-apl-trace--expression)))))
+  (when (string-blank-p expression)
+    (user-error "ride-apl: nothing to trace"))
+  (ride-apl--dispatch-trace expression))
+
+(defun ride-apl-trace-line ()
+  "Run the current line, or the active single-line region, under the tracer.
+The tracer opens on the expression's first line; from there `i' steps
+into any function it calls, so code that only ever lives in a file or
+scratch buffer is traced without setting a breakpoint in it.  The
+expression's definitions must already be in the workspace (evaluate or
+load the buffer first)."
+  (interactive)
+  (ride-apl--dispatch-trace (ride-apl-trace--expression)))
+
+(defun ride-apl-trace--expression ()
+  (let ((text (string-trim (if (use-region-p)
+                               (buffer-substring-no-properties
+                                (region-beginning) (region-end))
+                             (buffer-substring-no-properties
+                              (line-beginning-position) (line-end-position))))))
+    (when (string-empty-p text)
+      (user-error "ride-apl: nothing to trace"))
+    (when (string-match-p "\n" text)
+      (user-error "ride-apl: trace takes a single expression"))
+    text))
+
+(defun ride-apl--dispatch-trace (text)
+  (let ((conn (ride-apl-current-conn)))
+    (unless conn (user-error "ride-apl: no session"))
+    (ride-apl-session--dispatch conn (list :trace-line text))))
 
 (defun ride-apl-eval-buffer ()
   "Evaluate the whole buffer line by line."

@@ -37,7 +37,8 @@ Tracks implementation against `ride-apl-el-architecture-2.md`. Legend:
       editor / editing collected groups) still open
 - [ ] Prompt type 4 (⍞): prompt text as part of the pending line
 - [ ] Type-11/14 log backfill into the history ring
-- [ ] `Execute` trace flags 1/2 (belongs to M4)
+- [~] `Execute` trace flags 1/2: flag 1 done (`ride-apl-trace`,
+      `ride-apl-trace-line` on `C-c C-t`); flag 2 still open
 
 ### M3 — Editor windows: [x] COMPLETE (entityType rendering basic)
 - [x] `Edit` (with `unsaved` map from modified buffers), `SaveChanges`,

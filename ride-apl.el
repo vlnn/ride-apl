@@ -143,20 +143,6 @@ entries shadow later ones."
     (message "ride-apl: connecting to %s:%s..." host port)
     conn))
 
-(defun ride-apl-trace (line)
-  "Trace LINE: run it with the tracer open on the first call."
-  (interactive
-   (list (read-string "Trace: "
-                      (if (use-region-p)
-                          (buffer-substring-no-properties (region-beginning)
-                                                          (region-end))
-                        (thing-at-point 'line t)))))
-  (let ((conn (ride-apl-current-conn)))
-    (unless conn (user-error "ride-apl: no session"))
-    (ride-apl-session--dispatch conn
-                            (list :trace-line (string-trim-right line "
-")))))
-
 (defun ride-apl-pop-to-repl ()
   "Select the current session's REPL buffer."
   (interactive)

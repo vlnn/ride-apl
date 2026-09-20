@@ -69,6 +69,13 @@ Results come back as ` ⇒ value` overlays on the evaluated lines
 output is always in the REPL (`C-c C-z` jumps there).  Multi-line
 dfns evaluate line by line thanks to `Dyalog_LineEditor_Mode=1`.
 
+`C-c C-t` runs the current line (or single-line region) under the
+tracer instead: the tracer window opens on the expression and `i`
+steps into anything it calls.  This is how you trace code that only
+lives in a scratch buffer or an unfixed file — no breakpoint needed,
+so nothing is lost when the definitions are re-fixed.  Evaluate or
+load the definitions first; then trace the call.
+
 When the file grows into a set of definitions, stop evaluating it
 piecemeal: `C-c C-l` fixes the whole file with `2⎕FIX'file://...'`
 (saving first if modified).  From then on the interpreter knows the
@@ -112,7 +119,8 @@ Working the loop:
 - `C-c C-c` still evaluates *expressions* anywhere — handy in a
   scratch buffer next to the sources.  Don't line-eval a function
   file's body; saving is what fixes it.
-- Trace with `M-x ride-apl-trace mean 3 1 4`: stepping happens in a
+- Trace with `C-c C-t` on a call line, or `M-x ride-apl-trace` to
+  type an expression: stepping happens in a
   `*ride-apl-trace:mean*` protocol buffer (`i`/`o`/`u` step, `c`
   continue, `k` cut back, `b` toggle a stop); fixes you make there
   flow back to the file via Link.

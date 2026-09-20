@@ -121,9 +121,13 @@ Working the loop:
   file's body; saving is what fixes it.
 - Trace with `C-c C-t` on a call line, or `M-x ride-apl-trace` to
   type an expression: stepping happens in a
-  `*ride-apl-trace:mean*` protocol buffer (`i`/`o`/`u` step, `c`
-  continue, `k` cut back, `b` toggle a stop); fixes you make there
-  flow back to the file via Link.
+  `*ride-apl-trace:mean*` protocol buffer (`i`/`o`/`u` step, `I` step
+  into primitives, `c` continue, `k` cut back, `n`/`p` move the line
+  pointer without executing, `b` toggle a stop, `r` restart paused
+  threads); fixes you make there flow back to the file via Link.
+  Stops show as a fringe dot on graphic displays
+  (`ride-apl-tracer-stop-indicator`); `M-x ride-apl-clear-trace-stop-monitor`
+  wipes all ⎕TRACE/⎕STOP/⎕MONITOR settings at once.
 - After `git pull`/`checkout`, run `M-x ride-apl-link-resync` — the
   watcher (if any) misses bulk changes.
 - If a definition and its file ever diverge, `M-.` warns
@@ -185,6 +189,9 @@ fallback when you disable the redirect (`ride-apl-edit-visit-files`).
     ride-apl-link-roots               linked directories (or dir-local
                                   ride-apl-link-root)
     ride-apl-edit-visit-files         file redirect for OpenWindow, default t
+    ride-apl-tracer-stop-indicator    auto (default) / fringe / line
+    ride-apl-tracer-pop-on-open       nil stops background threads from
+                                  popping up tracer windows, default t
 
 Eldoc needs the Emacs 28+ eldoc API.  When no session is connected,
 ride-apl's eldoc steps aside so other providers (e.g. gnu-apl-mode's
@@ -225,7 +232,7 @@ one `GetValueTip` on a function are the most valuable ones missing.
                     the in-process fake RIDE server
     make compile    byte-compile with warnings as errors
 
-Emacs 28.1+.  Tests are data-table parametrized;
+Emacs 29.1+.  Tests are data-table parametrized;
 assertions carry "X should Y" context via `ert-info`.
 
 Security note: RIDE is unauthenticated plaintext TCP.  Bind to

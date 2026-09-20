@@ -1,10 +1,10 @@
 ;;; ride-apl.el --- Dyalog APL client via the RIDE protocol -*- lexical-binding: t; -*-
 
-;; Author: TODO-your-name <TODO-your@email>
-;; Maintainer: TODO-your-name <TODO-your@email>
-;; URL: https://example.com/TODO-repo-url
+;; Author: VLNN <vlnn-github@proton.me>
+;; Maintainer: VLNN <vlnn-github@proton.me>
+;; URL: https://github.com/vlnn/ride-apl
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "28.1"))
+;; Package-Requires: ((emacs "29.1"))
 ;; Keywords: languages, apl
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 

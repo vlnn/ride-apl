@@ -42,7 +42,9 @@ In Emacs:
 then `M-x ride-apl-start` to spawn an interpreter and connect in one
 step (`ride-apl-program`, default `dyalog`; `ride-apl-program-args` for
 flags such as `-tty`; prefix argument prompts for the exact command
-line) — or start one yourself as above and `M-x ride-apl-connect`.
+line; `ride-apl-program-environment` for environment variables —
+`DYALOG_LINEEDITOR_MODE=1` is already in its default) — or start one
+yourself as above and `M-x ride-apl-connect`.
 You get a `*ride-apl:HOST:PORT*` session buffer:
 log backfill, prompt gating, one Execute at a time (the queue clears
 on error), interrupts on `C-c C-c` / `C-c C-k`, history on `M-p` /
@@ -165,6 +167,9 @@ fallback when you disable the redirect (`ride-apl-edit-visit-files`).
 
     ride-apl-program                  interpreter for ride-apl-start, default dyalog
     ride-apl-program-args             extra args, default none
+    ride-apl-program-environment      extra VAR=VALUE entries for the spawned
+                                  interpreter, default enables
+                                  DYALOG_LINEEDITOR_MODE=1
     ride-apl-spawn-timeout            seconds to wait for RIDE, default 10
     ride-apl-eval-result-display      overlay (default) / echo / nil
     ride-apl-eval-result-max-length   inline truncation, default 120

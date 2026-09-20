@@ -25,6 +25,27 @@
   (should (member "RIDE_INIT=SERVE:127.0.0.1:4502"
                   (ride-apl-spawn--environment 4502))))
 
+(ert-deftest ride-apl-spawn-environment-enables-line-editor-by-default ()
+  (let ((process-environment (ride-apl-spawn--environment 4502)))
+    (should (equal (getenv "DYALOG_LINEEDITOR_MODE") "1"))))
+
+(ert-deftest ride-apl-spawn-environment-carries-custom-entries ()
+  (let* ((ride-apl-program-environment '("MAXWS=2G" "APL_TEST=yes"))
+         (process-environment (ride-apl-spawn--environment 4502)))
+    (should (equal (getenv "MAXWS") "2G"))
+    (should (equal (getenv "APL_TEST") "yes"))))
+
+(ert-deftest ride-apl-spawn-environment-custom-entries-override-inherited ()
+  (let* ((process-environment (cons "MAXWS=64M" process-environment))
+         (ride-apl-program-environment '("MAXWS=2G"))
+         (process-environment (ride-apl-spawn--environment 4502)))
+    (should (equal (getenv "MAXWS") "2G"))))
+
+(ert-deftest ride-apl-spawn-environment-ride-init-wins-over-custom ()
+  (let* ((ride-apl-program-environment '("RIDE_INIT=CONNECT:elsewhere:99"))
+         (process-environment (ride-apl-spawn--environment 4502)))
+    (should (equal (getenv "RIDE_INIT") "SERVE:127.0.0.1:4502"))))
+
 (ert-deftest ride-apl-spawn-environment-overrides-inherited-ride-init ()
   (let* ((process-environment (cons "RIDE_INIT=CONNECT:elsewhere:99"
                                     process-environment))

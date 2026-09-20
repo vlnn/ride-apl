@@ -43,6 +43,14 @@ RIDE is unauthenticated plaintext TCP; prefer an SSH tunnel."
   "Extra arguments `ride-apl-start' passes to `ride-apl-program'."
   :type '(repeat string) :group 'ride-apl)
 
+(defcustom ride-apl-program-environment '("DYALOG_LINEEDITOR_MODE=1")
+  "Extra \"VAR=VALUE\" entries for the spawned interpreter's environment.
+Entries shadow inherited variables of the same name; RIDE_INIT is
+always set by `ride-apl-start' itself.  The default enables Dyalog's
+multi-line session input, without which a dfn evaluated line by line
+dies with an unpaired-brace SYNTAX ERROR."
+  :type '(repeat string) :group 'ride-apl)
+
 (defcustom ride-apl-spawn-timeout 10
   "Seconds `ride-apl-start' waits for the interpreter to serve RIDE."
   :type 'number :group 'ride-apl)
@@ -85,8 +93,12 @@ line instead.  Return the interpreter process."
       (delete-process probe))))
 
 (defun ride-apl-spawn--environment (port)
-  "`process-environment' telling the interpreter to serve RIDE on PORT."
-  (cons (format "RIDE_INIT=SERVE:127.0.0.1:%s" port) process-environment))
+  "`process-environment' telling the interpreter to serve RIDE on PORT.
+RIDE_INIT comes first, then `ride-apl-program-environment', then the
+inherited environment; `getenv' takes the first match, so earlier
+entries shadow later ones."
+  (cons (format "RIDE_INIT=SERVE:127.0.0.1:%s" port)
+        (append ride-apl-program-environment process-environment)))
 
 (defun ride-apl-spawn--launch (argv port)
   "Start ARGV with RIDE_INIT set to serve PORT; return the process."

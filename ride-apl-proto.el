@@ -106,6 +106,12 @@
 ContinueTrace, Cutback, TraceForward, TraceBackward, TracePrimitive."
   (ride-apl-proto-serialize name `((win . ,win))))
 
+(defun ride-apl-proto-restart-threads ()
+  (ride-apl-proto-serialize "RestartThreads" nil))
+
+(defun ride-apl-proto-clear-trace-stop-monitor (token)
+  (ride-apl-proto-serialize "ClearTraceStopMonitor" `((token . ,token))))
+
 (defun ride-apl-proto-set-line-attributes (win stops)
   (ride-apl-proto-serialize "SetLineAttributes"
                         `((win . ,win) (stop . ,(vconcat stops)))))

@@ -51,7 +51,8 @@
   (pcase-dolist (`(,kind ,command)
                  '((:into "StepInto") (:over "RunCurrentLine")
                    (:continue "Continue") (:out "ContinueTrace")
-                   (:cutback "Cutback")))
+                   (:cutback "Cutback") (:forward "TraceForward")
+                   (:backward "TraceBackward") (:primitive "TracePrimitive")))
     (ert-info ((format "a %s step event should send %s for the window" kind command))
       (should (equal (cdr (ride-apl-session-step (ride-apl-trace-test--with-tracer)
                                              `(:step ,kind 31)))
@@ -69,6 +70,34 @@
       (should (equal (ride-apl-proto-arg (ride-apl-proto-parse (cadr (car effects)))
                                      'stop)
                      '(1))))))
+
+(ert-deftest ride-apl-session-restart-threads-sends ()
+  (ert-info (":restart-threads should send RestartThreads")
+    (should (equal (cdr (ride-apl-session-step (ride-apl-trace-test--with-tracer)
+                                           '(:restart-threads)))
+                   (list (list :send (ride-apl-proto-restart-threads)))))))
+
+(ert-deftest ride-apl-session-clear-trace-stop-monitor-sends ()
+  (ert-info (":clear-trace-stop-monitor should send ClearTraceStopMonitor")
+    (pcase-let ((`(,_ . ,effects)
+                 (ride-apl-session-step (ride-apl-trace-test--with-tracer)
+                                    '(:clear-trace-stop-monitor))))
+      (should (equal effects
+                     (list (list :send
+                                 (ride-apl-proto-clear-trace-stop-monitor 0)))))
+      (should (equal (car (ride-apl-proto-parse (cadr (car effects))))
+                     "ClearTraceStopMonitor")))))
+
+(ert-deftest ride-apl-session-reply-clear-notifies-counts ()
+  (ert-info ("ReplyClearTraceStopMonitor should notify info with cleared counts")
+    (pcase-let ((`(,_ . ,effects)
+                 (ride-apl-session-step
+                  (ride-apl-trace-test--with-tracer)
+                  '("ReplyClearTraceStopMonitor" . ((token . 0) (traces . 2)
+                                                    (stops . 3) (monitors . 0))))))
+      (should (equal effects
+                     '((:notify :info
+                        "Cleared 2 traces, 3 stops, 0 monitors")))))))
 
 (ert-deftest ride-apl-session-trace-line-gates-like-input ()
   (ert-info ("a :trace-line at an open prompt should send Execute with trace 1")

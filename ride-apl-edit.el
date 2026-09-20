@@ -23,6 +23,11 @@
 (defvar ride-apl-edit--killing-by-effect nil)
 (defvar ride-apl-edit-render-functions nil
   "Run in the window buffer after rendering, with the window record.")
+(defvar ride-apl-edit-display-buffer-functions nil
+  "Abnormal hook deciding how a new window buffer is shown.
+Each function is called with the window record and the buffer; the
+first non-nil result claims the display and suppresses the default
+`display-buffer'.")
 
 (defvar ride-apl-edit-mode-map
   (let ((map (make-sparse-keymap)))
@@ -159,6 +164,12 @@ tracer windows always use protocol buffers (AD-24)."
       (setq ride-apl-edit--win-id id)
       (ride-apl-edit-mode 1)
       (ride-apl-edit--render record))
+    (ride-apl-edit--display-buffer record buffer)))
+
+(defun ride-apl-edit--display-buffer (record buffer)
+  "Show BUFFER for RECORD unless a hook function claims the display."
+  (unless (run-hook-with-args-until-success
+           'ride-apl-edit-display-buffer-functions record buffer)
     (display-buffer buffer)))
 
 (defun ride-apl-edit--handle-update (conn args)

@@ -142,6 +142,13 @@
        (pcase-let ((`(,_ ,win ,stops) message))
          (cons state
                (list (list :send (ride-apl-proto-set-line-attributes win stops))))))
+      (:restart-threads
+       (cons state (list (list :send (ride-apl-proto-restart-threads)))))
+      (:clear-trace-stop-monitor
+       (cons state (list (list :send (ride-apl-proto-clear-trace-stop-monitor 0)))))
+      ("ReplyClearTraceStopMonitor"
+       (ride-apl-session--notify state :info
+                             (ride-apl-session--cleared-text message)))
       (:trace-line (ride-apl-session--on-trace-line state (cadr message)))
       (:dialog-reply
        (pcase-let ((`(,_ ,kind ,token ,value) message))
@@ -272,7 +279,14 @@
 
 (defconst ride-apl-session--step-commands
   '((:into . "StepInto") (:over . "RunCurrentLine") (:continue . "Continue")
-    (:out . "ContinueTrace") (:cutback . "Cutback")))
+    (:out . "ContinueTrace") (:cutback . "Cutback") (:forward . "TraceForward")
+    (:backward . "TraceBackward") (:primitive . "TracePrimitive")))
+
+(defun ride-apl-session--cleared-text (message)
+  (format "Cleared %s traces, %s stops, %s monitors"
+          (or (ride-apl-proto-arg message 'traces) 0)
+          (or (ride-apl-proto-arg message 'stops) 0)
+          (or (ride-apl-proto-arg message 'monitors) 0)))
 
 (defun ride-apl-session--on-highlight (state message)
   (let* ((id (ride-apl-proto-arg message 'win))

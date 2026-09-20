@@ -152,6 +152,16 @@ function in the tracer and fixing, confirm the change reached
 Adjust: the `:tracer` guard in `ride-apl-edit--visit-instead-p`.
 Capture: `f-trace.eld`.
 
+While the tracer is open, also exercise the line-pointer and thread
+commands: `n`/`p` (TraceForward/TraceBackward — highlight moves
+without output), `I` (TracePrimitive — does this interpreter accept
+it, and at what granularity?), `r` (RestartThreads — harmless with a
+single thread?), and `M-x ride-apl-clear-trace-stop-monitor` after `b`
+setting a stop — verify the reply's shape (does
+`ReplyClearTraceStopMonitor` carry `traces`/`stops`/`monitors`
+counts?).  Adjust: `ride-apl-session--cleared-text`,
+`ride-apl-proto-clear-trace-stop-monitor`.  Same capture.
+
 ## Phase G — rough handling
 
 - `⍳1e9` in the REPL, then `C-c C-c` (weak interrupt): verify it

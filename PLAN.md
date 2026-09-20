@@ -60,7 +60,7 @@ Tracks implementation against `ride-apl-el-architecture-2.md`. Legend:
 - [ ] Dialog shapes unverified against a real interpreter — capture a
       fix-time error transcript when one occurs
 
-### M4 — Tracer: [~] minimal tracer working
+### M4 — Tracer: [x] COMPLETE (per-thread focus policy is basic)
 - [x] Stepping: `StepInto`/`RunCurrentLine`/`Continue`/`ContinueTrace`/
       `Cutback` on single keys (i/o/c/u/k) in tracer buffers
 - [x] `M-x ride-apl-trace` — Execute with trace:1, gated like input
@@ -69,11 +69,18 @@ Tracks implementation against `ride-apl-el-architecture-2.md`. Legend:
       point follows; 0-based conversion at the UI boundary only
 - [x] `SetLineAttributes` both directions; `b` toggles a stop and
       waits for the interpreter's echo before rendering
-- [ ] `TraceForward`/`TraceBackward`/`TracePrimitive`,
-      `RestartThreads`, `ClearTraceStopMonitor`
-- [ ] Stops in the fringe (currently whole-line face); highlight
-      column ranges (start_col/end_col honored as whole-line only)
-- [ ] Multi-thread tracer windows and focus policy (AD-23)
+- [x] `TraceForward`/`TraceBackward` (n/p move the line pointer),
+      `TracePrimitive` (I), `RestartThreads` (r),
+      `ClearTraceStopMonitor` (M-x; reply notifies cleared counts —
+      arg shapes unverified against a real interpreter)
+- [x] Stops in the fringe (`ride-apl-tracer-stop-indicator`: fringe on
+      graphic displays, whole-line face on ttys, both forceable);
+      highlight honors start_col/end_col, clamped to line ends
+- [~] Multi-thread tracer windows (per-token windows + tid/tname in
+      the mode line) and focus policy (AD-23):
+      `ride-apl-tracer-pop-on-open` nil keeps a stopping background
+      thread from grabbing the display; richer per-thread focus
+      rules wait for M5 thread state
 
 ### M5 — Stack, threads, status: [ ] not started
 
@@ -148,8 +155,9 @@ Tracks implementation against `ride-apl-el-architecture-2.md`. Legend:
   the protocol window. Protocol buffers serve tracing and file-less
   objects only. Sync file->workspace via explicit Notify rather than
   trusting the .NET watcher
-- AD-23 tracer focus/threads: [ ] focus-steal inhibit and tid
-  modelines still pending; single-thread tracing works
+- AD-23 tracer focus/threads: [~] focus-steal inhibit
+  (`ride-apl-tracer-pop-on-open`) and tid modelines done; richer
+  per-thread focus rules wait for M5 thread state
 
 ## Known deviations from the doc
 
@@ -233,19 +241,19 @@ editor buffers, so tests no longer leak `*ride-apl-edit:*` buffers):
       the file (modulo trailing newline) and warns, suggesting Resync
 
 ### Release readiness: [~] mechanical prep done
-- [x] Package headers (Version 0.1.0, URL/Author placeholders),
-      Package-Requires single-sourced in ride-apl.el, minimum 28.1
-      (natnum defcustom types + eldoc API made 27.1 untrue)
+- [x] Package headers (Version 0.1.0, Author/URL filled),
+      Package-Requires single-sourced in ride-apl.el, minimum 29.1
+      (28.x failed in CI and was dropped from the matrix)
 - [x] checkdoc: substantive docstring warnings fixed; message-prefix
       capitalization and internal-fn docstrings deliberately kept
 - [x] package-lint clean (via make lint, advisory)
 - [x] COPYING (GPL-3.0-or-later), .gitignore, GitHub Actions CI
-      (28.2 / 29.4 / snapshot)
+      (29.4 / snapshot)
 - [x] Renamed to ride-apl (MELPA's `ride-mode` and Dyalog's RIDE both
       argued against the bare prefix); package-lint clean under the
       new name
 - [x] License confirmed GPL-3.0-or-later
-- [ ] Fill Author/URL placeholders; tag v0.1.0
+- [ ] Tag v0.1.0
 - [ ] Run VERIFICATION.md against a real interpreter; turn captures
       into replay fixtures
 - [ ] CI workflow is unexercised until first push

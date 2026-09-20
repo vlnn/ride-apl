@@ -93,8 +93,16 @@ given, else on a kernel-assigned free port."
     ("CloseWindow"
      (ride-apl-testsrv--send
       process (ride-apl-proto-serialize "CloseWindow" '((win . 21)))))
-    ((or "StepInto" "RunCurrentLine")
+    ((or "StepInto" "RunCurrentLine" "TraceForward" "TracePrimitive")
      (let ((line (1+ (or (process-get process 'ride-apl-trace-line) 0))))
+       (process-put process 'ride-apl-trace-line line)
+       (ride-apl-testsrv--send
+        process (ride-apl-proto-serialize
+                 "SetHighlightLine"
+                 `((win . 31) (line . ,line) (end_line . ,line)
+                   (start_col . -1) (end_col . -1))))))
+    ("TraceBackward"
+     (let ((line (max 0 (1- (or (process-get process 'ride-apl-trace-line) 0)))))
        (process-put process 'ride-apl-trace-line line)
        (ride-apl-testsrv--send
         process (ride-apl-proto-serialize

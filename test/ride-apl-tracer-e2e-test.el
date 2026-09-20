@@ -84,6 +84,21 @@
                                                  (ride-apl-conn-state conn)))
                                   :stop))))))))
 
+(ert-deftest ride-apl-tracer-e2e-line-pointer-moves-both-ways ()
+  (ride-apl-e2e--with-repl conn _buffer
+    (should (ride-apl-test--wait-for (lambda () (ride-apl-e2e--ready-p conn))))
+    (should (ride-apl-tracer-e2e--start conn))
+    (with-current-buffer (ride-apl-tracer-e2e--buffer conn)
+      (ride-apl-tracer-forward))
+    (ert-info ("forward should move the line pointer down without executing")
+      (should (ride-apl-test--wait-for
+               (lambda () (equal (ride-apl-tracer-e2e--highlight-line conn) 2)))))
+    (with-current-buffer (ride-apl-tracer-e2e--buffer conn)
+      (ride-apl-tracer-backward))
+    (ert-info ("backward should move the line pointer back up")
+      (should (ride-apl-test--wait-for
+               (lambda () (equal (ride-apl-tracer-e2e--highlight-line conn) 1)))))))
+
 (ert-deftest ride-apl-tracer-e2e-continue-closes-and-outputs ()
   (ride-apl-e2e--with-repl conn buffer
     (should (ride-apl-test--wait-for (lambda () (ride-apl-e2e--ready-p conn))))

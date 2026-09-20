@@ -14,7 +14,7 @@
 ;;; Code:
 
 (require 'seq)
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 
 (defcustom ride-apl-link-roots nil
   "Directories whose files belong to Link'd namespaces.

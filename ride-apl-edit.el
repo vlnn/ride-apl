@@ -13,7 +13,7 @@
 
 ;;; Code:
 
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 (require 'xref)
 
 (declare-function dyalog-mode "dyalog-mode")

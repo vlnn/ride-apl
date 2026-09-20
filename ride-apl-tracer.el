@@ -11,7 +11,7 @@
 
 ;;; Code:
 
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 (require 'ride-apl-edit)
 
 (defface ride-apl-face-trace-highlight '((t :inherit highlight :extend t))

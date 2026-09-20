@@ -12,7 +12,7 @@
 ;;; Code:
 
 (require 'eldoc)
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 (require 'ride-apl-repl)
 
 (defun ride-apl-eldoc-function (callback &rest _)

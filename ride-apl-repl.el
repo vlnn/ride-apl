@@ -11,7 +11,7 @@
 ;;; Code:
 
 (require 'ring)
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 
 (defcustom ride-apl-repl-max-size (* 2 1024 1024)
   "Character cap for the session buffer; nil means unbounded (AD-22)."

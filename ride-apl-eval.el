@@ -12,7 +12,7 @@
 ;;; Code:
 
 (require 'seq)
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 (require 'ride-apl-eldoc)
 (require 'ride-apl-link)
 

@@ -15,7 +15,7 @@
 
 ;;; Code:
 
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 (require 'ride-apl-repl)
 (require 'ride-apl-edit)
 (require 'ride-apl-tracer)

@@ -1,7 +1,7 @@
 ;;; ride-apl-test-common.el --- Shared test helpers -*- lexical-binding: t; -*-
 
 (require 'ride-apl-repl)
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 (require 'ride-apl-test-server)
 
 (defun ride-apl-test--fold (state messages)

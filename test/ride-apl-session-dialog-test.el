@@ -1,7 +1,7 @@
 ;;; ride-apl-session-dialog-test.el --- M3 close-out reducer tests -*- lexical-binding: t; -*-
 
 (require 'ert)
-(require 'ride-apl-session)
+(require 'ride-apl-conn)
 (require 'ride-apl-proto)
 (require 'ride-apl-test-common)
 
